@@ -51,7 +51,7 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173, https://brainquiz-psi.vercel.app/, https://brainquizz1.vercel.app/",
+		AllowOrigins: "http://localhost:5173, https://brainquiz-psi.vercel.app, https://brainquizz1.vercel.app",
 		AllowMethods: strings.Join([]string{
 			fiber.MethodGet,
 			fiber.MethodPost,
@@ -60,7 +60,7 @@ func main() {
 			fiber.MethodDelete,
 			fiber.MethodPatch,
 		}, ","),
-		AllowHeaders:     "",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
 	}))
 
