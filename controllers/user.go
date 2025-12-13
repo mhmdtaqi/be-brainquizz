@@ -81,6 +81,21 @@ func RoleMiddleware(allowedRoles []string) fiber.Handler {
 	}
 }
 
+// LogAudit logs user activities for auditing
+func LogAudit(userID uint, action string, c *fiber.Ctx) {
+	ip := c.IP()
+	userAgent := c.Get("User-Agent")
+
+	auditLog := models.AuditLog{
+		UserID:    userID,
+		Action:    action,
+		IPAddress: ip,
+		UserAgent: userAgent,
+	}
+
+	database.DB.Create(&auditLog)
+}
+
 func Register(c *fiber.Ctx) error {
 	var data map[string]string
 
@@ -134,13 +149,36 @@ func Login(c *fiber.Ctx) error {
 	var user models.Users
 	// Find user by email
 	if err := database.DB.Where("email = ?", data["email"]).First(&user).Error; err != nil {
+		// Log failed login attempt for unknown user
+		LogAudit(0, "failed_login_unknown_user", c)
 		return sendResponse(c, fiber.StatusNotFound, false, "User not found", nil)
+	}
+
+	// Check if account is locked
+	if user.LockedUntil != nil && time.Now().Before(*user.LockedUntil) {
+		LogAudit(user.ID, "failed_login_locked", c)
+		return sendResponse(c, fiber.StatusTooManyRequests, false, "Account is temporarily locked due to too many failed attempts", nil)
 	}
 
 	// Compare password
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
+		// Increment failed attempts
+		user.FailedAttempts++
+		if user.FailedAttempts >= 3 {
+			// Lock account for 15 minutes
+			lockTime := time.Now().Add(15 * time.Minute)
+			user.LockedUntil = &lockTime
+			user.FailedAttempts = 0 // Reset after lock
+		}
+		database.DB.Save(&user)
+		LogAudit(user.ID, "failed_login", c)
 		return sendResponse(c, fiber.StatusUnauthorized, false, "Invalid password", nil)
 	}
+
+	// Successful login - reset failed attempts and unlock
+	user.FailedAttempts = 0
+	user.LockedUntil = nil
+	database.DB.Save(&user)
 
 	// Generate JWT token with custom claims including role
 	claims := jwt.MapClaims{
@@ -165,6 +203,9 @@ func Login(c *fiber.Ctx) error {
 	}
 	c.Cookie(&cookie)
 
+	// Log successful login
+	LogAudit(user.ID, "login", c)
+
 	return sendResponse(c, fiber.StatusOK, true, "Login successful", fiber.Map{
 		"token":   tokenString,
 		"role":    user.Role,
@@ -185,6 +226,11 @@ func User(c *fiber.Ctx) error {
 }
 
 func Logout(c *fiber.Ctx) error {
+	// Try to get user for logging (don't fail if token is invalid)
+	if user, err := Authenticate(c); err == nil {
+		LogAudit(user.ID, "logout", c)
+	}
+
 	cookie := fiber.Cookie{
 		Name:     "jwt",
 		Value:    "",

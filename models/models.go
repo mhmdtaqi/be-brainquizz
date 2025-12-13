@@ -2,16 +2,19 @@ package models
 
 import (
 	"encoding/json"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 type Users struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Email    string `json:"email" gorm:"unique"`
-	Password []byte `json:"-"`
-	Role     string `json:"role"`
+	Name           string     `json:"name"`
+	Email          string     `json:"email" gorm:"unique"`
+	Password       []byte     `json:"-"`
+	Role           string     `json:"role"`
+	FailedAttempts int        `json:"failed_attempts" gorm:"default:0"`
+	LockedUntil    *time.Time `json:"locked_until"`
 }
 type Kategori_Soal struct {
 	gorm.Model
@@ -85,4 +88,13 @@ type Kelas_Pengguna struct {
 	Users    Users `gorm:"foreignKey:Users_id;constraint:OnDelete:CASCADE;"`
 	Kelas_id uint  `json:"kelas_id"`
 	Kelas    Kelas `gorm:"foreignKey:Kelas_id;constraint:OnDelete:CASCADE;"`
+}
+
+type AuditLog struct {
+	gorm.Model
+	UserID    uint   `json:"user_id"`
+	User      Users  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	Action    string `json:"action"` // login, logout, failed_login
+	IPAddress string `json:"ip_address"`
+	UserAgent string `json:"user_agent"`
 }

@@ -86,4 +86,15 @@ func Setup(app *fiber.App) {
 	result.Get("/user/:user_id", controllers.RoleMiddleware([]string{"admin", "teacher"}), controllers.GetHasilKuisByUserID)
 	result.Post("/submit-jawaban", controllers.SubmitJawaban)
 	result.Get("/:user_id/:kuis_id", controllers.GetHasilKuis)
+
+	// 404 Handler - must be last
+	app.Use(func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"data":    nil,
+			"success": false,
+			"message": "Endpoint not found",
+			"path":    c.Path(),
+			"method":  c.Method(),
+		})
+	})
 }
