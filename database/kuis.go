@@ -28,27 +28,27 @@ func CreateKuis(title string, description string, isPrivate bool, kategori uint,
 	// Validate Kategori, Tingkatan, and Kelas
 	var kategoriObj models.Kategori_Soal
 	if err := db.First(&kategoriObj, kategori).Error; err != nil {
-		return newKuis, fmt.Errorf("Invalid Kategori ID")
+		return newKuis, fmt.Errorf("invalid kategori id")
 	}
 
 	var tingkatanObj models.Tingkatan
 	if err := db.First(&tingkatanObj, tingkatan).Error; err != nil {
-		return newKuis, fmt.Errorf("Invalid Tingkatan ID")
+		return newKuis, fmt.Errorf("invalid tingkatan id")
 	}
 
 	var kelasObj models.Kelas
 	if err := db.First(&kelasObj, kelas).Error; err != nil {
-		return newKuis, fmt.Errorf("Invalid Kelas ID")
+		return newKuis, fmt.Errorf("invalid kelas id")
+	}
+
+	var PendidikanObj models.Pendidikan
+	if err := db.First(&PendidikanObj, pendidikan).Error; err != nil {
+		return newKuis, fmt.Errorf("invalid pendidikan id")
 	}
 
 	// Insert the new Kuis into the database
 	if err := db.Create(&newKuis).Error; err != nil {
 		return newKuis, fmt.Errorf("failed to insert data into kuis: %w", err)
-	}
-
-	var PendidikanObj models.Kategori_Soal
-	if err := db.First(&PendidikanObj, pendidikan).Error; err != nil {
-		return newKuis, fmt.Errorf("Invalid Pendidikan ID")
 	}
 
 	return newKuis, nil
@@ -64,8 +64,8 @@ func GetKuis() ([]models.Kuis, error) {
 		return kuisList, err
 	}
 
-	// Preload related models (Kategori, Tingkatan, Kelas)
-	if err := db.Preload("Kategori").Preload("Tingkatan").Preload("Kelas").Find(&kuisList).Error; err != nil {
+	// Preload related models (Kategori, Tingkatan, Kelas, Pendidikan)
+	if err := db.Preload("Kategori").Preload("Tingkatan").Preload("Kelas").Preload("Pendidikan").Find(&kuisList).Error; err != nil {
 		return kuisList, fmt.Errorf("failed to retrieve kuis: %w", err)
 	}
 
