@@ -50,8 +50,14 @@ func main() {
 
 	app := fiber.New()
 
+	// Get allowed origins from environment variable or use default
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "http://localhost:5173, https://brainquiz-psi.vercel.app, https://brainquizz1.vercel.app, https://brainquizez.vercel.app"
+	}
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173, https://brainquiz-psi.vercel.app, https://brainquizz1.vercel.app",
+		AllowOrigins: allowedOrigins,
 		AllowMethods: strings.Join([]string{
 			fiber.MethodGet,
 			fiber.MethodPost,
