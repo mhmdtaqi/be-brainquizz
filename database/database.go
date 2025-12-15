@@ -30,12 +30,12 @@ type Config struct {
 // GetDatabaseConfig reads database configuration from environment variables
 func GetDatabaseConfig() *Config {
 	config := &Config{
-		Host:     getEnv("DB_HOST", "hopper.proxy.rlwy.net"),
-		Port:     getEnvAsInt("DB_PORT", 27146),
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "yBxKUopLCrVnBCpjpKdADHLGYMTYkKPC"),
-		DBName:   getEnv("DB_NAME", "railway"),
-		SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Host:     getEnv("DB_HOST", ""),
+		Port:     getEnvAsInt("DB_PORT", 5432),
+		User:     getEnv("DB_USER", ""),
+		Password: getEnv("DB_PASSWORD", ""),
+		DBName:   getEnv("DB_NAME", ""),
+		SSLMode:  getEnv("DB_SSLMODE", "require"),
 		TimeZone: getEnv("DB_TIMEZONE", "Asia/Jakarta"),
 	}
 	return config

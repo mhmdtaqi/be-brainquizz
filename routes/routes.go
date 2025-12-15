@@ -87,6 +87,10 @@ func Setup(app *fiber.App) {
 	result.Post("/submit-jawaban", controllers.SubmitJawaban)
 	result.Get("/:user_id/:kuis_id", controllers.GetHasilKuis)
 
+	// Audit Routes (Admin only)
+	audit := app.Group("/audit", AuthMiddleware)
+	audit.Get("/logs", controllers.RoleMiddleware([]string{"admin"}), controllers.GetAuditLogs)
+
 	// 404 Handler - must be last
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{

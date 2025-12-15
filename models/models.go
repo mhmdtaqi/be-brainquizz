@@ -97,4 +97,8 @@ type AuditLog struct {
 	Action    string `json:"action"` // login, logout, failed_login
 	IPAddress string `json:"ip_address"`
 	UserAgent string `json:"user_agent"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	Resource  string `json:"resource"`
+	Status    string `json:"status"`
 }
