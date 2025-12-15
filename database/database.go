@@ -119,6 +119,7 @@ func InitDB() (*gorm.DB, error) {
 		&models.Hasil_Kuis{},
 		&models.SoalAnswer{},
 		&models.Kelas_Pengguna{},
+		&models.AuditLog{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
